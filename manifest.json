@@ -4,18 +4,18 @@
   "description": "一个会记住你的虚拟人",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#f5f0eb",
-  "theme_color": "#f5f0eb",
+  "background_color": "#d4e5e6",
+  "theme_color": "#d4e5e6",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192'%3E%3Crect width='192' height='192' fill='%23f5f0eb'/%3E%3Ctext x='96' y='128' text-anchor='middle' font-size='108'%3E岸宝%3C/text%3E%3C/svg%3E",
+      "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/png"
     },
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512'%3E%3Crect width='512' height='512' fill='%23f5f0eb'/%3E%3Ctext x='256' y='340' text-anchor='middle' font-size='288'%3E岸宝%3C/text%3E%3C/svg%3E",
+      "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png"
     }
   ]
 }
