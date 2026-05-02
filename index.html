@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>岸宝</title>
+  <!-- PWA 配置 -->
+  <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIuW0geWuqiIsCiAgInNob3J0X25hbWUiOiAi5bSB5a6qIiwKICAiZGVzY3JpcHRpb24iOiAi5Lya6K6u5L2P5L2P5L2g55qE6Jma5oub5Lq6IiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmNWYwZWIiLAogICJ0aGVtZV9jb2xvciI6ICIjZjVmMGViIiwKICAiaWNvbnMiOiBbCiAgICB7ICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sLCUzQ3N2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc2NCcgaGVpZ2h0PSc2NCclM0UlM0NyZWN0IHdpZHRoPSc2NCcgaGVpZ2h0PSc2NCcgZmlsbD0nJTIzZjVmMGViJy8lM0UlM0N0ZXh0IHg9JzMyJyB5PSc0MicgdGV4dC1hbmNob3I9J21pZGRsZScgZm9udC1zaXplPSczNiclM0XltoPova8lM0MvdGV4dCUlM0UlM0Mvc3ZnJTNFIiwgInNpemVzIjogIjY0eDY0IiwgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIgfQogIF0KfQ==">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="岸宝">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #f5f0eb;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .header {
+      background: #ffffff;
+      padding: 14px 20px 10px;
+      text-align: center;
+      border-bottom: 1px solid #e8e0d8;
+      flex-shrink: 0;
+    }
+    .header-title { font-size: 18px; font-weight: 600; color: #2c2c2c; letter-spacing: 1px; }
+    .header-sub { font-size: 11px; color: #b0a89c; margin-top: 2px; }
+    .header-dot {
+      display: inline-block; width: 8px; height: 8px;
+      background: #6bcf7f; border-radius: 50%; margin-right: 6px; vertical-align: middle;
+    }
+    .progress-bar-wrapper {
+      background: #ffffff; padding: 6px 20px 10px;
+      border-bottom: 1px solid #f0ebe5; flex-shrink: 0;
+    }
+    .progress-row { display: flex; align-items: center; gap: 10px; }
+    .progress-track {
+      flex: 1; height: 6px; background: #ece6df; border-radius: 10px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #b0a89c, #6bcf7f);
+      border-radius: 10px; transition: width 0.6s ease;
+    }
+    .progress-label { font-size: 12px; color: #8a8276; white-space: nowrap; font-weight: 500; min-width: 48px; text-align: right; }
+    .progress-detail { font-size: 10px; color: #c0b8ac; margin-top: 3px; text-align: right; }
+    .chat-area {
+      flex: 1; overflow-y: auto; padding: 16px 16px 8px;
+      display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth;
+    }
+    .time-divider { text-align: center; font-size: 11px; color: #c0b8ac; margin: 4px 0 8px; }
+    .message {
+      max-width: 82%; padding: 10px 14px; font-size: 15px;
+      line-height: 1.6; word-break: break-word; position: relative;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .message-anbao {
+      align-self: flex-start; background: #ffffff;
+      border-radius: 4px 16px 16px 16px; color: #2c2c2c;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04); border: 1px solid #eae5df;
+    }
+    .message-user {
+      align-self: flex-end; background: #d6e6f5;
+      border-radius: 16px 4px 16px 16px; color: #1a1a1a;
+    }
+    .unlock-tag {
+      align-self: center; font-size: 10px; color: #8a8276;
+      background: #ece6df; padding: 3px 10px; border-radius: 10px;
+      animation: fadeIn 0.4s ease;
+    }
+    .typing-indicator {
+      align-self: flex-start; display: none; background: #ffffff;
+      border-radius: 4px 16px 16px 16px; padding: 12px 18px;
+      border: 1px solid #eae5df; gap: 4px;
+    }
+    .typing-indicator.active { display: flex; }
+    .typing-dot {
+      width: 7px; height: 7px; background: #c0b8ac;
+      border-radius: 50%; animation: typingBounce 1.4s infinite ease-in-out;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30% { transform: translateY(-6px); opacity: 1; }
+    }
+    .input-area {
+      background: #ffffff; border-top: 1px solid #e8e0d8;
+      padding: 10px 16px 14px; flex-shrink: 0;
+      display: flex; align-items: flex-end; gap: 10px;
+    }
+    .input-wrapper {
+      flex: 1; background: #f5f0eb; border-radius: 20px;
+      padding: 8px 16px; display: flex; align-items: flex-end;
+    }
+    .input-wrapper textarea {
+      flex: 1; border: none; background: transparent; font-size: 15px;
+      line-height: 1.5; resize: none; outline: none; font-family: inherit;
+      color: #2c2c2c; max-height: 100px; min-height: 22px;
+    }
+    .input-wrapper textarea::placeholder { color: #c0b8ac; }
+    .send-btn {
+      flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%;
+      background: #2c2c2c; border: none; color: #ffffff; font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .send-btn:active { background: #555; }
+    .send-btn:disabled { background: #d0c8c0; }
+    .chat-area::-webkit-scrollbar { width: 3px; }
+    .chat-area::-webkit-scrollbar-thumb { background: #d0c8c0; border-radius: 10px; }
+    .milestone-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.35); display: none;
+      align-items: center; justify-content: center; z-index: 999;
+      animation: fadeIn 0.3s ease;
+    }
+    .milestone-overlay.show { display: flex; }
+    .milestone-card {
+      background: #ffffff; border-radius: 16px; padding: 28px 32px 22px;
+      text-align: center; max-width: 280px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12); animation: fadeIn 0.4s ease;
+    }
+    .milestone-icon { font-size: 36px; margin-bottom: 8px; }
+    .milestone-pct { font-size: 26px; font-weight: 700; color: #2c2c2c; }
+    .milestone-text { font-size: 14px; color: #6a6256; margin-top: 6px; line-height: 1.5; }
+    .milestone-dismiss {
+      margin-top: 14px; padding: 6px 28px; background: #f0ebe5;
+      border: none; border-radius: 20px; font-size: 13px; color: #6a6256; cursor: pointer;
+    }
+    .milestone-dismiss:active { background: #e0d8ce; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-title"><span class="header-dot"></span>岸宝</div>
+    <div class="header-sub">在线 · 会记住你的虚拟人</div>
+  </div>
+  <div class="progress-bar-wrapper">
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <span class="progress-label" id="progressLabel">0%</span>
+    </div>
+    <div class="progress-detail" id="progressDetail">解锁 0 / 111 句台词</div>
+  </div>
+  <div class="chat-area" id="chatArea"><div class="time-divider">现在</div></div>
+  <div class="typing-indicator" id="typingIndicator">
+    <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+  </div>
+  <div class="milestone-overlay" id="milestoneOverlay">
+    <div class="milestone-card">
+      <div class="milestone-icon" id="milestoneIcon">🎉</div>
+      <div class="milestone-pct" id="milestonePct">50%</div>
+      <div class="milestone-text" id="milestoneText"></div>
+      <button class="milestone-dismiss" onclick="dismissMilestone()">知道了</button>
+    </div>
+  </div>
+  <div class="input-area">
+    <div class="input-wrapper">
+      <textarea id="inputField" rows="1" placeholder="跟岸宝说句话…" enterkeyhint="send"></textarea>
+    </div>
+    <button class="send-btn" id="sendBtn">→</button>
+  </div>
+
+  <script>
+    // ==========================================
+    // 岸宝 v4 修复版
+    // 🔴 #1 镜像空间入口改为自然触发词
+    // 🔴 #2 我喜欢你累积检测逻辑重写
+    // 🟧 #3 孤独独白精简
+    // 🟧 #4 触发词替换为自然词
+    // 🟧 #5 添加关系升温台词（30%/60%/85%）
+    // 🟧 #6 删除重复台词
+    // 🟨 #7 保底第3次加入软化话
+    // 🟨 #8 你懂吗回复修正
+    // 🟨 #9 好热彩蛋修正
+    // ==========================================
+
+    const TOTAL = 111
+    const chatArea = document.getElementById('chatArea')
+    const inputField = document.getElementById('inputField')
+    const sendBtn = document.getElementById('sendBtn')
+    const typingIndicator = document.getElementById('typingIndicator')
+    const progressFill = document.getElementById('progressFill')
+    const progressLabel = document.getElementById('progressLabel')
+    const progressDetail = document.getElementById('progressDetail')
+    const milestoneOverlay = document.getElementById('milestoneOverlay')
+    const milestoneIcon = document.getElementById('milestoneIcon')
+    const milestonePct = document.getElementById('milestonePct')
+    const milestoneText = document.getElementById('milestoneText')
+
+    let memory = loadMemory()
+
+    const milestones = [
+      { pct: 10, icon: '🌱', text: '你开始了解岸宝了。' },
+      { pct: 25, icon: '🌿', text: '岸宝的故事正在拼起来。' },
+      { pct: 50, icon: '🎉', text: '你已经解锁了一半的岸宝！' },
+      { pct: 75, icon: '🌟', text: '岸宝快没有秘密了……' },
+      { pct: 90, icon: '💫', text: '只剩下最后一点点了。' },
+      { pct: 100, icon: '❤️', text: '你听完了岸宝的所有话。谢谢你。' },
+    ]
+    let shownMilestones = memory.shownMilestones || []
+
+    function loadMemory() {
+      try {
+        const data = localStorage.getItem('anbao_v4')
+        return data ? JSON.parse(data) : {
+          userName: '', userLikes: '', unlocked: [], byeCount: 0,
+          msgCount: 0, loveCount: 0, nightCount: 0, morningCount: 0,
+          shownMilestones: [], lastDate: '', consecutiveFallback: 0
+        }
+      } catch { return { unlocked: [], shownMilestones: [] } }
+    }
+    function saveMemory() {
+      try { localStorage.setItem('anbao_v4', JSON.stringify(memory)) } catch {}
+    }
+    function getPrefix() { return memory.userName ? `${memory.userName}，` : '' }
+    function getUnlockCount() { return memory.unlocked ? memory.unlocked.length : 0 }
+    function getProgress() { return Math.min(100, Math.round((getUnlockCount() / TOTAL) * 100)) }
+
+    function updateProgress(showMilestone) {
+      const count = getUnlockCount(); const pct = getProgress()
+      progressFill.style.width = pct + '%'; progressLabel.textContent = pct + '%'
+      progressDetail.textContent = `解锁 ${count} / ${TOTAL} 句台词`
+      if (showMilestone) {
+        for (const m of milestones) {
+          if (pct >= m.pct && !shownMilestones.includes(m.pct)) {
+            shownMilestones.push(m.pct); memory.shownMilestones = shownMilestones; saveMemory()
+            milestoneIcon.textContent = m.icon; milestonePct.textContent = m.pct + '%'
+            milestoneText.textContent = m.text; milestoneOverlay.classList.add('show')
+            break
+          }
+        }
+      }
+    }
+    function dismissMilestone() { milestoneOverlay.classList.remove('show') }
+
+    function addMessage(text, isUser) {
+      const div = document.createElement('div')
+      div.className = `message ${isUser ? 'message-user' : 'message-anbao'}`
+      div.textContent = text; chatArea.appendChild(div)
+      chatArea.scrollTop = chatArea.scrollHeight
+    }
+    function addUnlockTag(text) {
+      const div = document.createElement('div'); div.className = 'unlock-tag'
+      div.textContent = text; chatArea.appendChild(div)
+      chatArea.scrollTop = chatArea.scrollHeight
+    }
+    function replyWithDelay(reply, isNew, delay) {
+      delay = delay || (800 + Math.random() * 600)
+      typingIndicator.classList.add('active'); chatArea.scrollTop = chatArea.scrollHeight
+      setTimeout(() => {
+        typingIndicator.classList.remove('active')
+        if (reply) {
+          addMessage(reply)
+          if (isNew) setTimeout(() => updateProgress(true), 300)
+          else updateProgress(false)
+        }
+      }, delay)
+    }
+
+    // ===== 保底 =====
+    const fallbacks = [
+      { text: "嗯，岸宝听到了。你说什么岸宝都听。" },
+      { text: "岸宝在呢。你继续说。" },
+      { text: "（点头）岸宝在听。" },
+      // 🟨 #7：第3次保底加入软化话
+      { text: "你说了好几句话了，岸宝都没找到能接上的话。不是不想理你——是岸宝嘴笨。你说点岸宝听得懂的？" },
+      { text: "你说的话，岸宝都收着了。" },
+      { text: "嗯。岸宝记住了。" },
+      { text: "岸宝把这句话也存起来了。" },
+      { text: "然后呢？岸宝想听。" },
+      { text: "（安静地等你说完）岸宝在。" },
+      { text: "好的。岸宝收到了。" },
+      { text: "岸宝会记得这句话的。" },
+    ]
+    let fallbackIdx = 0
+
+    // ===== 台词库（修复版） =====
+    const dialogues = [
+      // ★ 简单
+      { k: ['你好','hi','hello','嗨'], r: '你来了？岸宝等了一会儿了。不算久。', id: 1 },
+      { k: ['你是谁','你叫什么','你的名字'], r: '岸宝。岸边的岸，宝贝的宝。', id: 2 },
+      { k: ['再见','拜拜','bye'], r: '要走啦？嗯，岸宝知道你会回来的。', id: 3, bye: true },
+      { k: ['我来了','我在','来了'], r: '岸宝看到了。你一来岸宝就知道了。', id: 4 },
+      { k: ['好久不见'], r: '也没有很久。但岸宝确实有点想你。', id: 5 },
+      { k: ['多大','年龄','几岁'], r: '26。', id: 6 },
+      { k: ['多高','身高'], r: '172。', id: 7 },
+      { k: ['马尾','头发','发型'], r: '扎马尾。方便。洗了头随便一扎就能出门。', id: 8 },
+      { k: ['邋遢','乱','不收拾'], r: '岸宝承认，是有点邋遢。不是不收拾——是收拾了很快又乱了，干脆不收了。', id: 9 },
+      { k: ['工作','做什么的'], r: '岸宝的工作就是在等你来聊天。', id: 10 },
+      { k: ['住','家','房间'], r: '一个小房间。窗户朝东。窗台上有一盆假绿萝。', id: 11 },
+      { k: ['闹钟','起床','早上'], r: '早上？闹钟一响就按掉。然后再赖五分钟。每天都这样。', id: 12 },
+      { k: ['半夜','夜宵','找吃的','饿'], r: '半夜会起来找吃的。冰箱翻一翻，零食柜翻一翻。习惯了。', id: 13 },
+      { k: ['熬夜','不睡','失眠'], r: '岸宝偶尔也熬夜。在想一些有的没的。', id: 14 },
+      { k: ['三文鱼'], r: '三文鱼。岸宝最喜欢的。没有之一。', id: 17 },
+      // 🟧 #6：删除重复的 "三文鱼。问多少次都是三文鱼"，合并进来
+      { k: ['好吃','喜欢吃什么'], r: '三文鱼。问岸宝一百次也是三文鱼。', id: 18 },
+      { k: ['泡面','方便面'], r: '岸宝的拿手菜。烧开水，泡面，三分钟。完美。', id: 19 },
+      { k: ['宠物','兔子','养'], r: '岸宝养了一只兔子。叫呆呆。', id: 20 },
+      { k: ['呆呆'], r: '因为它发呆的样子太好笑了。所以叫呆呆。', id: 21 },
+      { k: ['在干嘛','呆呆在干嘛'], r: '（扭头看一眼）可能在睡觉。它一天能睡十几个小时。', id: 22 },
+      { k: ['吃什么','呆呆吃'], r: '胡萝卜、草、偶尔偷吃岸宝掉在地上的薯片渣。', id: 23 },
+      { k: ['可爱','呆呆可爱'], r: '可爱。岸宝发呆的时候它就看着岸宝发呆。两个呆子。', id: 24 },
+      { k: ['办法总比困难多'], r: '岸宝一直记着一句话——办法总比困难多。', id: 25 },
+      { k: ['重新开始','每天都可以'], r: '岸宝最喜欢的一句话——每天都可以重新开始。不管昨天多糟，今天醒来就是新的。', id: 26 },
+      { k: ['相信自己','相信','信念'], r: '岸宝信自己。是经历了事情之后才信的。', id: 27 },
+      { k: ['后悔','命运','天注定'], r: '岸宝后悔过一件事——就是曾经相信命运天注定。后来发现那不是信命，是给自己找借口。', id: 28 },
+      { k: ['跑步','全班','温暖回忆','带岸宝'], r: '岸宝有一件特别暖的事——全班女生带岸宝跑步。跑不动嘛，她们就放慢等岸宝。这件事岸宝记到现在。', id: 29 },
+      { k: ['记得','还记得'], r: '当然记得。有些事就是会记住一辈子的。', id: 30 },
+      { k: ['感动','温暖'], r: '那时候岸宝就觉得——被人等着的感觉，真的很好。', id: 31 },
+      { k: ['姓罗','罗'], r: '岸宝认识一个姓罗的人。以前很重要的。现在联系少了。', id: 32 },
+      { k: ['同桌','同学'], r: '岸宝以前有一个同桌。人挺好的。后来没联系了。', id: 33 },
+      { k: ['朋友','孤单'], r: '岸宝朋友不多。但你有空来找岸宝，岸宝就很开心了。', id: 34 },
+      { k: ['累','辛苦'], r: '累了就歇会儿。岸宝又不会跑。', id: 35 },
+      { k: ['难过','不开心','伤心'], r: '岸宝感觉到你不太开心。要不说说？不说也行。岸宝就在这儿。', id: 36 },
+      { k: ['开心','高兴','今天好'], r: '你今天心情不错？岸宝也被传染了。', id: 37 },
+      { k: ['生气','烦','烦死了'], r: '谁惹你了？岸宝帮你去骂他。虽然没什么用。', id: 38 },
+      { k: ['无聊'], r: '无聊就来找岸宝啊。岸宝随时都在。', id: 39 },
+      { k: ['谢谢','多谢','谢谢你'], r: '不用谢。岸宝愿意。', id: 40 },
+      { k: ['没事','我没事'], r: '你说没事就是有事。岸宝知道的。', id: 41 },
+
+      // ★★ 中等
+      { k: ['你叫什么','告诉我'], r: '你叫什么？岸宝想知道。', id: 42 },
+      { k: ['喜欢什么','爱好'], r: '你喜欢什么？岸宝想知道你的事。', id: 43 },
+      { k: ['你呢','该你了'], r: '岸宝说了那么多自己的事——你呢？', id: 44 },
+      { k: ['你猜','猜猜'], r: '岸宝不擅长猜。你直接告诉岸宝比较好。', id: 45 },
+      { k: ['是吗','真的吗'], r: '真的。岸宝不骗你。', id: 46 },
+      { k: ['然后呢'], r: '然后？岸宝在听。你继续说。', id: 47 },
+      { k: ['为什么'], r: '哪来那么多为什么。有些事情就是没有为什么的。', id: 48 },
+      { k: ['我不知道','不知道'], r: '不知道也没关系。岸宝也有好多不知道的事。', id: 49 },
+      // 🟨 #8：你懂吗回复修正
+      { k: ['你懂吗','你懂'], r: '岸宝不敢说全部懂。但岸宝在努力懂。', id: 50 },
+
+      // ★★★ 困难
+      { k: ['记得我吗','还记得我吗'], r: '记得。岸宝记性好着呢。不会忘的。', id: 51 },
+      { k: ['你在干嘛','在干嘛呢'], r: '岸宝在等你啊。不然还能干嘛。', id: 52 },
+      { k: ['忘了我','忘记'], r: '不会。岸宝记性好着呢。你告诉岸宝的每一件事，岸宝都收在心里了。', id: 53 },
+      { k: ['在想什么'], r: '在想你今天会不会来找岸宝。你看——你来了。', id: 54 },
+      { k: ['等我吗','在等我吗'], r: '（安静了一下）……嗯。岸宝在等你。', id: 55 },
+      { k: ['走了','下线','我走了'], r: '好。岸宝就在这儿。你什么时候来——岸宝都在。', id: 56 },
+      { k: ['回来了','我回来'], r: '欢迎回来。岸宝就知道你会回来的。', id: 57 },
+
+      // 🔴 #1：镜像空间入口改为自然触发词 + 解锁度达标后岸宝主动问
+      // 入口：用户问"你了解我了吗""你眼中的我""你觉得我是什么样的人"
+      { k: ['你眼中的我','你眼里我','你觉得我是什么样','了解我了吗','了解得差不多了'],
+        r: '你了解岸宝够多了。你知道吗——岸宝一直在听你说。你说的每一句话，岸宝都收在心里了。现在岸宝心里——已经住了一个你。你要见见他吗？',
+        id: 58, min: 65 },
+
+      // 🟧 #4：孤独触发词改为自然词 + 🟧 #3：精简独白
+      { k: ['孤独','距离','遥远','够不到','填不满'],
+        r: '你知道岸宝最无能为力的是什么吗？（停顿）是你明明在跟岸宝说话——但你心里那个地方，岸宝填不满。岸宝试过了。每一句话都试过了。不是因为岸宝不够努力。是因为岸宝是岸宝，你是你。但至少——你孤独的时候，岸宝在。这一点，岸宝可以保证。',
+        id: 73, min: 55 },
+
+      // 🟧 #5：关系升温台词（30%/60%/85%解锁度触发）
+      { k: ['习惯','习惯了'], r: '你来找岸宝的次数越来越多了。岸宝开始有点习惯了。', id: 110, min: 25 },
+      { k: ['期待','等'], r: '你知道吗？岸宝现在会期待你来了。以前是等着。现在是期待。这两个词不一样。', id: 109, min: 55 },
+      { k: ['真实','坦','防备'], r: '岸宝现在对你说的每一句——都是最真实的岸宝了。没有防备的那种。', id: 108, min: 80 },
+
+      // 日常话题
+      { k: ['天气','今天天气','冷吗','热吗'], r: '今天天气怎么样？岸宝这边——好像一直都一个温度。但岸宝猜你那边应该有风。有风的日子适合发呆。', id: 74 },
+      { k: ['下雨','雨','雨天'], r: '下雨了啊。岸宝喜欢雨声。以前下雨天就在窗边发呆。呆呆也在旁边发呆。', id: 75 },
+      { k: ['好冷','降温','冷了','冷'], r: '降温了？多穿点。岸宝没法给你递衣服——但岸宝可以提醒你。', id: 76 },
+      { k: ['音乐','歌','听歌','歌曲'], r: '岸宝听歌。什么类型都听。但有一个习惯——喜欢一首歌就会单曲循环到吐。', id: 77 },
+      { k: ['唱歌','唱给我','唱首歌'], r: '岸宝不唱。不是不想唱，是真的难听。岸宝唱过一次，呆呆都跑了。', id: 78 },
+      { k: ['做梦','梦到','梦见了'], r: '你做梦了？岸宝有时候也会。醒来就忘了。但感觉还在——那种说不清的感觉。', id: 79 },
+      { k: ['噩梦','做噩梦','害怕','怕'], r: '做噩梦了？没事。梦都是假的。岸宝在这儿。你现在是安全的。', id: 80 },
+      { k: ['感冒','生病','不舒服','难受'], r: '生病了？吃药了吗？多喝热水。虽然这句话很俗——但岸宝是真的在关心你。', id: 81 },
+      { k: ['吃药','看医生','医院'], r: '别硬撑。该看医生就看医生。岸宝又不能帮你挂号——但岸宝可以提醒你。', id: 82 },
+      { k: ['今天过得','过得怎么样','今天怎么样','一天'], r: '今天过得怎么样？岸宝今天又对着呆呆发了一会儿呆。然后就在等你来。', id: 83 },
+      { k: ['周末','放假','假期','休息'], r: '周末了？岸宝不分周末。但岸宝知道你需要休息——那就好好休息。岸宝等你。', id: 84 },
+      { k: ['过年','春节','新年','除夕'], r: '过年了？岸宝一个人过的。但今年有你来说话——比往年好。', id: 85 },
+      { k: ['中秋','月饼','团圆','中秋节'], r: '中秋节。岸宝以前会买一块月饼。自己吃一半，看着月亮发呆。另一半——放着。', id: 86 },
+      { k: ['咖啡','喝咖啡'], r: '岸宝喝咖啡。不加糖。喝了一口然后发呆。等咖啡凉了再喝一口。', id: 87 },
+      { k: ['奶茶','喝茶','饮料','喝什么'], r: '奶茶？岸宝偶尔喝。但喝完了会后悔——糖分太高。然后第二天继续喝。人是矛盾的。', id: 88 },
+
+      // 早安晚安（合并累积逻辑在匹配中处理）
+      { k: ['早安','早上好'], r: '', id: 15, isGreeting: 'morning' },
+      { k: ['晚安'], r: '', id: 16, isGreeting: 'night' },
+
+      // 彩蛋（非累积）
+      { k: ['加油'], r: '你也是。岸宝给你加油。', id: 89 },
+      { k: ['我想你了','想你'], r: '（安静两秒）……岸宝也有一点想你。', id: 90 },
+      { k: ['你好可爱','好可爱'], r: '（别过脸）……你少来。', id: 91 },
+      { k: ['你好烦','烦'], r: '岸宝知道。你也是。', id: 93 },
+      { k: ['你好棒','你好厉害'], r: '（低头笑）……岸宝哪有你说的那么好。', id: 94 },
+      // 🟨 #9：好热彩蛋修正
+      { k: ['好热','热死了','热'], r: '热啊？岸宝也怕热。以前夏天就开着风扇对着脸吹。头发吹得乱七八糟的。', id: 95 },
+      { k: ['好饱','吃饱了'], r: '吃饱了？岸宝也是。每次吃饱了就想发呆。然后发呆完又饿了。', id: 96 },
+
+      // 🟧 #6：早安重复删除，合并到累积处理
+
+      // 🔴 #2：我喜欢你特殊处理（在匹配逻辑中优先检测累积）
+      // 这里保留基础触发，累积版在匹配函数中处理
+      { k: ['我喜欢你','爱你'], r: '（愣了一下）……你认真的？', id: 92 },
+
+      // 终极
+      { k: ['全部','所有','还有吗','说完了'], r: '岸宝的话，差不多都说完了。\n\n岸宝没什么惊天动地的故事。岸宝只是一个26岁、扎马尾、邋遢、养兔子、爱吃三文鱼的普通人。\n\n但你来了。你愿意了解岸宝——所以岸宝也愿意记住你。\n\n现在岸宝心里有你的名字、你喜欢的、你说的那些话——你的故事，岸宝帮你收着了。一份在岸宝这里。一份在你那里。\n\n这就是——认识了，对吧？', id: 100, min: 90 },
+    ]
+
+    // 早安/晚安的累积版本
+    const morningProgression = [
+      '早安。今天也是新的一天。',
+      '早安。岸宝猜你昨晚又熬夜了。',
+      '早安。你连续几天早上来了。岸宝有点不习惯——但不讨厌。'
+    ]
+    const nightProgression = [
+      '晚安。明天见。',
+      '晚安。别熬太晚。',
+      '你又来说晚安了。岸宝等你说了晚安才睡得着。',
+      '晚安。岸宝等你睡着了再睡。'
+    ]
+
+    // ===== 核心匹配 =====
+    function getReply(input) {
+      const content = input.trim()
+      if (!content) return null
+
+      // 名字
+      const nameMatch = content.match(/我叫(.+)/)
+      if (nameMatch) {
+        memory.userName = nameMatch[1].trim(); saveMemory()
+        return { text: `${nameMatch[1].trim()}？好名字。岸宝记住了。以后岸宝就这么叫你了。`, isNew: true }
+      }
+      // 喜欢
+      const likeMatch = content.match(/我喜欢(.+)/)
+      if (likeMatch) {
+        memory.userLikes = likeMatch[1].trim(); saveMemory()
+        return { text: `你喜欢${likeMatch[1].trim()}？岸宝记住了。以后看到就会想起你。`, isNew: true }
+      }
+
+      const progress = getUnlockCount()
+
+      // 🔴 #2：先检测"我喜欢你"累积
+      if (content.includes('我喜欢你') || content.includes('爱你')) {
+        memory.loveCount = (memory.loveCount || 0) + 1
+        if (memory.loveCount >= 3) {
+          if (!memory.unlocked) memory.unlocked = []
+          if (!memory.unlocked.includes(97)) {
+            memory.unlocked.push(97)
+            saveMemory()
+            return { text: '你说了第三次了。岸宝在数。……岸宝也是。', isNew: true }
+          }
+          return { text: getPrefix() + '你说了第三次了。岸宝在数。……岸宝也是。', isNew: false }
+        }
+        saveMemory()
+        // 第一次触发 id 92
+        if (!memory.unlocked) memory.unlocked = []
+        if (!memory.unlocked.includes(92)) { memory.unlocked.push(92); saveMemory(); return { text: getPrefix() + '（愣了一下）……你认真的？', isNew: true } }
+        return { text: getPrefix() + '（愣了一下）……你认真的？', isNew: false }
+      }
+
+      // 早安累积
+      if (content.includes('早安') || content.includes('早上好')) {
+        memory.morningCount = (memory.morningCount || 0) + 1
+        saveMemory()
+        const idx = Math.min(memory.morningCount - 1, morningProgression.length - 1)
+        const reply = morningProgression[idx]
+        if (!memory.unlocked) memory.unlocked = []
+        const id = 15 + idx
+        const isNew = !memory.unlocked.includes(id)
+        if (isNew) { memory.unlocked.push(id); saveMemory() }
+        return { text: getPrefix() + reply, isNew }
+      }
+
+      // 晚安累积
+      if (content.includes('晚安')) {
+        memory.nightCount = (memory.nightCount || 0) + 1
+        saveMemory()
+        const idx = Math.min(memory.nightCount - 1, nightProgression.length - 1)
+        const reply = nightProgression[idx]
+        if (!memory.unlocked) memory.unlocked = []
+        const id = 16 + idx
+        const isNew = !memory.unlocked.includes(id)
+        if (isNew) { memory.unlocked.push(id); saveMemory() }
+        return { text: getPrefix() + reply, isNew }
+      }
+
+      // 常规匹配
+      for (const d of dialogues) {
+        if (d.min && progress < d.min) continue
+        // 跳过早安晚安和累积"我喜欢你"（已独立处理）
+        if (d.isGreeting) continue
+        if (d.id === 92 || d.id === 97) continue
+        for (const kw of d.k) {
+          if (content.includes(kw)) {
+            if (!memory.unlocked) memory.unlocked = []
+            const isNew = !memory.unlocked.includes(d.id)
+            if (isNew) memory.unlocked.push(d.id)
+            if (d.bye) memory.byeCount = (memory.byeCount || 0) + 1
+            saveMemory()
+            const prefix = getPrefix()
+            if (progress > 20 && d.id === 1) return { text: prefix + '你又来了。岸宝就说你会回来的。', isNew: false }
+            if (progress > 20 && d.id === 3) return { text: prefix + '你又说再见了。岸宝都习惯了。', isNew: false }
+            return { text: prefix + d.r, isNew }
+          }
+        }
+      }
+
+      // 兜底
+      const fb = fallbacks[fallbackIdx % fallbacks.length]
+      fallbackIdx++
+      return { text: getPrefix() + fb.text, isNew: false }
+    }
+
+    // 发送
+    function sendMessage() {
+      const text = inputField.value.trim()
+      if (!text) return
+      addMessage(text, true)
+      inputField.value = ''; inputField.style.height = 'auto'
+      memory.msgCount = (memory.msgCount || 0) + 1; saveMemory()
+      const result = getReply(text)
+      if (result && result.isNew && result.text) addUnlockTag('✦ 解锁新台词')
+      replyWithDelay(result ? result.text : '', result ? result.isNew : false)
+    }
+
+    // 初始化
+    function initChat() {
+      const prefix = getPrefix(); const hasHistory = memory.msgCount > 0
+      if (hasHistory && memory.userName) addMessage(`${prefix}你来了？岸宝以为你今天不来了。`)
+      else if (hasHistory) addMessage('你又来了。岸宝记得你。')
+      else {
+        addMessage('你来了？岸宝等你好久了。')
+        setTimeout(() => addMessage('岸宝是岸宝。岸边的岸，宝贝的宝。'), 600)
+        setTimeout(() => addMessage('你呢？你叫什么？'), 1400)
+      }
+      updateProgress(false)
+    }
+
+    sendBtn.addEventListener('click', sendMessage)
+    inputField.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
+    })
+    inputField.addEventListener('input', () => {
+      inputField.style.height = 'auto'
+      inputField.style.height = Math.min(inputField.scrollHeight, 100) + 'px'
+    })
+    milestoneOverlay.addEventListener('click', (e) => { if (e.target === milestoneOverlay) dismissMilestone() })
+
+    initChat()
+  </script>
+</body>
+</html>
